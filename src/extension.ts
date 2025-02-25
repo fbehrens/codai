@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import * as Codai from './codai';
-import OpenAI from 'openai';
-import { parse, chatGpt, sleep, Message } from './lib/fbutil';
+import { parse, chatGpt, sleep } from './lib/fbutil';
 import { Config } from './codai';
-const openai = new OpenAI({});
+import { streamText } from 'ai';
 const outputChannel = vscode.window.createOutputChannel('Codai');
 let abortController: AbortController | null = null;
 
@@ -43,32 +42,23 @@ export function activate(context: vscode.ExtensionContext) {
     stopGeneratingButton.show();
     const c = Codai.getConfig({});
     const content = Codai.getQuestion(c);
-    const mess = await parse(content, c);
-    outputChannel.appendLine(Codai.messagesToString(mess));
+    const messages = await parse(content, c);
+    outputChannel.appendLine(Codai.messagesToString(messages));
     try {
-      const messages = await Promise.all(
-        mess.map((m) => {
-          return chatGpt(m, c);
-        })
-      );
-      const stream = await openai.chat.completions.create(
-        {
-          messages,
-          model: c.model,
-          stream: true,
-        },
-        {
-          signal: abortController.signal,
-        }
-      );
-      for await (const part of stream) {
+      //   const messages = await Promise.all(
+      //     mess.map((m) => {
+      //       return chatGpt(m, c);
+      //     })
+      //   );
+      const result = streamText({
+        messages,
+        model: c.model,
+      });
+      for await (const delta of result.textStream) {
         if (abortController.signal.aborted) {
           throw new vscode.CancellationError();
         }
-        let d;
-        if ((d = part.choices[0]?.delta)) {
-          await c.out(d.content!);
-        }
+        await c.out(delta);
       }
     } catch (error) {
       if (error instanceof vscode.CancellationError) {

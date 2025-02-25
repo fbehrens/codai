@@ -5,9 +5,10 @@ import {
 } from 'openai/resources/chat/completions';
 import * as Fbutil from '../lib/fbutil';
 import { Config } from '../codai';
+import { openai } from '@ai-sdk/openai';
 
 const c: Config = {
-  model: 'gpt-4o',
+  model: openai('gpt-4o'),
   detail: 'low',
   dir: '/Users/fb/Documents/Github/codai/examples',
   out: (s: string) => {},

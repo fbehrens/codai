@@ -1,9 +1,11 @@
 import * as vscode from 'vscode';
 import * as Fbutil from './lib/fbutil';
 import * as path from 'path';
+import { CoreMessage, LanguageModel } from 'ai';
+import { openai } from '@ai-sdk/openai';
 
 export type Config = {
-  model: string;
+  model: LanguageModel;
   detail: Fbutil.Detail;
   out: (a: string) => void;
   dir: string;
@@ -18,7 +20,7 @@ export function getConfig({
 }): Config {
   const config = vscode.workspace.getConfiguration('codai');
   return {
-    model: config.get('model')!,
+    model: openai('gpt-4o'),
     detail: config.get('detail')!,
     languageSystemPrompts: config.get('languageSystemPrompts')!,
     dir: path.dirname(file),
@@ -63,7 +65,7 @@ function pasteStreamingResponse(languageId: string) {
   };
 }
 
-export function messagesToString(mess: Fbutil.Message[]): string {
+export function messagesToString(mess: CoreMessage[]): string {
   return mess
     .map((m) => {
       return m.role + ': ' + m.content + '\n';

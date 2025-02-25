@@ -1,14 +1,10 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
+
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Config } from '../codai';
-
-const openai = new OpenAI({
-  // apiKey: 'my api key', // defaults to process.env["OPENAI_API_KEY"]
-});
-type Role = 'function' | 'system' | 'user' | 'assistant';
-export type Message = { role: Role; content: string };
+import { CoreMessage } from 'ai';
 
 export type Detail = 'low' | 'high';
 
@@ -58,15 +54,7 @@ export async function chatGpt(
   return m as ChatCompletionMessageParam;
 }
 
-/**
- *
- * @param dialog
- * @param detail
- * @param dir
- * @param onlylastPrompt
- * @returns
- */
-export async function parse(dialog: string, c: Config): Promise<Message[]> {
+export async function parse(dialog: string, c: Config): Promise<CoreMessage[]> {
   const roles = 'function:|user:|system:|assistant:|dalle:';
   const dialog1 = dialog.replace(
     new RegExp(`\n(#+ )?(?<role>${roles})`, 'g'),
@@ -74,13 +62,13 @@ export async function parse(dialog: string, c: Config): Promise<Message[]> {
   ); // ## user: -> user:
   const paragraphs = dialog1.split(new RegExp(`\n(?=${roles})`));
   //   let result: ChatCompletionMessageParam[] = [];
-  let result: Message[] = [];
+  let result: CoreMessage[] = [];
   for (const paragraph of paragraphs) {
     const colon = paragraph.indexOf(':');
     const r = paragraph.slice(0, colon);
     const content = paragraph.slice(colon + 1).trim();
-    const role = r as Role;
-    const m: Message = { role, content };
+    const role = r as 'system' | 'user' | 'assistant';
+    const m: CoreMessage = { role, content };
     // const mes = await encodeImage(role, content);
     result.push(m);
   }
