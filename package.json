@@ -36,15 +36,12 @@
                 },
                 "codai.model": {
                     "type": "string",
-                    "default": "gpt-4o",
+                    "default": "claude-3-7-sonnet-20250219",
                     "enum": [
-                        "gpt-3.5-turbo",
-                        "gpt-4",
-                        "gpt-4-32k",
-                        "gpt-4-0125-preview",
+                        "claude-3-7-sonnet-20250219",
                         "gpt-4o"
                     ],
-                    "description": "openai model"
+                    "description": "Language Model"
                 },
                 "codai.detail": {
                     "type": "string",
@@ -92,6 +89,7 @@
         "vitest": "^3.0.7"
     },
     "dependencies": {
+        "@ai-sdk/anthropic": "^1.1.10",
         "@ai-sdk/openai": "^1.1.14",
         "ai": "^4.1.46",
         "openai": "^4.85.4"

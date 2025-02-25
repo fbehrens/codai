@@ -41,6 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
     abortController = new AbortController();
     stopGeneratingButton.show();
     const c = Codai.getConfig({});
+    console.log(c.model.modelId);
     const content = Codai.getQuestion(c);
     const messages = await parse(content, c);
     outputChannel.appendLine(Codai.messagesToString(messages));

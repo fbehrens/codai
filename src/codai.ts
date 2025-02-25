@@ -3,6 +3,7 @@ import * as Fbutil from './lib/fbutil';
 import * as path from 'path';
 import { CoreMessage, LanguageModel } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { anthropic } from '@ai-sdk/anthropic';
 
 export type Config = {
   model: LanguageModel;
@@ -19,8 +20,12 @@ export function getConfig({
   out = pasteStreamingResponse(languageId),
 }): Config {
   const config = vscode.workspace.getConfiguration('codai');
+  let model = config.get('model');
   return {
-    model: openai('gpt-4o'),
+    model:
+      model == 'gpt-4o'
+        ? openai('gpt-4o')
+        : anthropic('claude-3-7-sonnet-20250219'),
     detail: config.get('detail')!,
     languageSystemPrompts: config.get('languageSystemPrompts')!,
     dir: path.dirname(file),
