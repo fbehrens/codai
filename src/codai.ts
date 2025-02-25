@@ -4,7 +4,6 @@ import * as path from 'path';
 
 export type Config = {
   model: string;
-  claudeModel: string;
   detail: Fbutil.Detail;
   out: (a: string) => void;
   dir: string;
@@ -20,7 +19,6 @@ export function getConfig({
   const config = vscode.workspace.getConfiguration('codai');
   return {
     model: config.get('model')!,
-    claudeModel: config.get('claudeModel')!,
     detail: config.get('detail')!,
     languageSystemPrompts: config.get('languageSystemPrompts')!,
     dir: path.dirname(file),

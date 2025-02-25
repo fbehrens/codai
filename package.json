@@ -1,111 +1,97 @@
 {
-  "name": "codai",
-  "publisher": "fbehrens",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/fbehrens/codai.git"
-  },
-  "displayName": "codai",
-  "description": "use openai Chat Completion api wht the roles function,sytem,user nad assistant",
-  "version": "0.16.0",
-  "prettier": {
-    "tabWidth": 2,
-    "printWidth": 80,
-    "singleQuote": true,
-    "trailingComma": "es5"
-  },
-  "engines": {
-    "vscode": "^1.82.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [],
-  "main": "./out/extension.js",
-  "contributes": {
-    "configuration": {
-      "title": "Codai",
-      "properties": {
-        "codai.languageSystemPrompts": {
-          "type": "object",
-          "default": {
-            "javascript": "You are a javascript senior developer. The user gives you a function with a name,a signature and an optional docstring and you respond with the function body. Please include explanations only when important. Please respond with just code and put the explanation in comments.",
-            "python": "You are a python senior developer. The user gives you a function with a name,a signature and an optional docstring and you respond with the function body. Please include explanations only when important. Please respond with just and without ``` markdow code markers"
-          },
-          "description": "An example setting of type Object"
-        },
-        "codai.model": {
-          "type": "string",
-          "default": "gpt-4o",
-          "enum": [
-            "gpt-3.5-turbo",
-            "gpt-4",
-            "gpt-4-32k",
-            "gpt-4-0125-preview",
-            "gpt-4o"
-          ],
-          "description": "openai model"
-        },
-        "codai.claudeModel": {
-          "type": "string",
-          "default": "claude-3-5-sonnet-20241022",
-          "enum": [
-            "claude-3-5-sonnet-20241022",
-            "claude-3-5-sonnet-20240620"
-          ],
-          "description": "claude model"
-        },
-        "codai.detail": {
-          "type": "string",
-          "default": "low",
-          "enum": [
-            "low",
-            "high"
-          ],
-          "description": "openai image resolution"
-        }
-      }
+    "name": "codai",
+    "publisher": "fbehrens",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/fbehrens/codai.git"
     },
-    "commands": [
-      {
-        "command": "codai.openai_completion",
-        "title": "Codai: OpenAi Chat Completion"
-      },
-      {
-        "command": "codai.claude_completion",
-        "title": "Codai: Claude Chat Completion"
-      },
-      {
-        "command": "codai.dalle",
-        "title": "Codai: Dalle"
-      }
-    ]
-  },
-  "scripts": {
-    "vscode:prepublish": "rm -rf out && npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "vitest --dir src/test",
-    "lint": "eslint src --ext ts",
-    "format": "prettier --write \"src/**/*.ts\""
-  },
-  "devDependencies": {
-    "@types/node": "20.x",
-    "@types/vscode": "^1.82.0",
-    "@typescript-eslint/eslint-plugin": "^7.2.0",
-    "@typescript-eslint/parser": "^7.2.0",
-    "@vscode/test-electron": "^2.3.4",
-    "esbuild": "^0.21.3",
-    "eslint": "^8.47.0",
-    "glob": "^10.3.3",
-    "prettier": "^3.0.3",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.1.6",
-    "vitest": "^1.6.0"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.1",
-    "openai": "^4.6.0"
-  }
+    "displayName": "codai",
+    "description": "use openai Chat Completion api wht the roles function,sytem,user nad assistant",
+    "version": "0.16.0",
+    "prettier": {
+        "tabWidth": 2,
+        "printWidth": 80,
+        "singleQuote": true,
+        "trailingComma": "es5"
+    },
+    "engines": {
+        "vscode": "^1.82.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [],
+    "main": "./out/extension.js",
+    "contributes": {
+        "configuration": {
+            "title": "Codai",
+            "properties": {
+                "codai.languageSystemPrompts": {
+                    "type": "object",
+                    "default": {
+                        "javascript": "You are a javascript senior developer. The user gives you a function with a name,a signature and an optional docstring and you respond with the function body. Please include explanations only when important. Please respond with just code and put the explanation in comments.",
+                        "python": "You are a python senior developer. The user gives you a function with a name,a signature and an optional docstring and you respond with the function body. Please include explanations only when important. Please respond with just and without ``` markdow code markers"
+                    },
+                    "description": "An example setting of type Object"
+                },
+                "codai.model": {
+                    "type": "string",
+                    "default": "gpt-4o",
+                    "enum": [
+                        "gpt-3.5-turbo",
+                        "gpt-4",
+                        "gpt-4-32k",
+                        "gpt-4-0125-preview",
+                        "gpt-4o"
+                    ],
+                    "description": "openai model"
+                },
+                "codai.detail": {
+                    "type": "string",
+                    "default": "low",
+                    "enum": [
+                        "low",
+                        "high"
+                    ],
+                    "description": "openai image resolution"
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "codai.openai_completion",
+                "title": "Codai: OpenAi Chat Completion"
+            },
+            {
+                "command": "codai.dalle",
+                "title": "Codai: Dalle"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "rm -rf out && npm run esbuild-base -- --minify",
+        "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/extension.js --external:vscode --format=cjs --platform=node",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "test": "vitest --dir src/test",
+        "lint": "eslint src --ext ts",
+        "format": "prettier --write \"src/**/*.ts\""
+    },
+    "devDependencies": {
+        "@types/node": "~20.17.19",
+        "@types/vscode": "^1.97.0",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "@vscode/test-electron": "^2.4.1",
+        "esbuild": "^0.21.5",
+        "eslint": "^8.57.1",
+        "glob": "^10.4.5",
+        "prettier": "^3.5.2",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.7.3",
+        "vitest": "^1.6.1"
+    },
+    "dependencies": {
+        "openai": "^4.85.4"
+    }
 }
