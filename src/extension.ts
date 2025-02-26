@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as Codai from './codai';
-import { parse, chatGpt, sleep } from './lib/fbutil';
-import { Config } from './codai';
+import { parse, chatGpt } from './lib/fbutil';
 import { streamText } from 'ai';
 const outputChannel = vscode.window.createOutputChannel('Codai');
 let abortController: AbortController | null = null;

@@ -1,6 +1,3 @@
-import OpenAI from 'openai';
-import { ChatCompletionMessageParam } from 'openai/resources';
-
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { Config } from '../codai';
@@ -30,7 +27,7 @@ export async function chatGpt(m: CoreMessage, c: Config): Promise<CoreMessage> {
     };
   }
 
-  const regexp = /\!\[[^\]]*\]\((.*?)\)/g;
+  const regexp = /!\[[^\]]*\]\((.*?)\)/g;
   const content = m.content as string;
   const imagesStr = [...content.matchAll(regexp)].map((match) => match[1]);
   const images = await Promise.all(imagesStr.map(imageTag));
