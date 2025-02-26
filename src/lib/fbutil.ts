@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import { Config } from '../codai';
-import { CoreMessage } from 'ai';
+import { CoreMessage, ImagePart } from 'ai';
 
 export type Detail = 'low' | 'high';
 
@@ -9,7 +9,7 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function chatGpt(m: CoreMessage, c: Config): CoreMessage {
+export function replaceImages(m: CoreMessage, c: Config): CoreMessage {
   function imageTag(url: string) {
     if (!url.startsWith('http')) {
       const filename = path.resolve(c.dir, url);
@@ -23,25 +23,27 @@ export function chatGpt(m: CoreMessage, c: Config): CoreMessage {
       image: new URL(url),
     };
   }
-
+  if (m.role !== 'user') {
+    return m;
+  }
   const regexp = /!\[[^\]]*\]\((.*?)\)/g;
   const content = m.content as string;
   const imagesStr = [...content.matchAll(regexp)].map((match) => match[1]);
-  const images = imagesStr.map(imageTag);
-  if (images.length) {
-    const content_ = content.replaceAll(regexp, '');
-    return {
-      role: m.role,
-      content: [
-        {
-          type: 'text',
-          text: content_,
-        },
-        ...images,
-      ],
-    } as CoreMessage;
+  if (imagesStr.length === 0) {
+    return m;
   }
-  return m as CoreMessage;
+  const images = imagesStr.map(imageTag);
+  const content_ = content.replaceAll(regexp, '');
+  return {
+    role: 'user',
+    content: [
+      {
+        type: 'text',
+        text: content_,
+      },
+      ...(images as ImagePart[]),
+    ],
+  };
 }
 
 export function parse(dialog: string, c: Config): CoreMessage[] {
@@ -59,8 +61,7 @@ export function parse(dialog: string, c: Config): CoreMessage[] {
     const content = paragraph.slice(colon + 1).trim();
     const role = r as 'system' | 'user' | 'assistant';
     const m: CoreMessage = { role, content };
-    // const mes = await encodeImage(role, content);
-    result.push(m);
+    result.push(replaceImages(m, c));
   }
   // postprrocessing
   // start from last system prompt

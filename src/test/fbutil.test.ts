@@ -44,8 +44,8 @@ user: What do you eat`;
   });
   describe('Image', async () => {
     it('http', async () => {
-      const mes = Fbutil.parse(`user: Hello Hello![](http://image)`, c);
-      const result = Fbutil.chatGpt(mes[0], c);
+      const result = Fbutil.parse(`user: Hello Hello![](http://image)`, c)[0]!;
+
       expect(result).toStrictEqual({
         role: 'user',
         content: [
@@ -58,8 +58,7 @@ user: What do you eat`;
       });
     });
     it('local base64', () => {
-      const m = Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`, c);
-      const mp = Fbutil.chatGpt(m[0], c);
+      const mp = Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`, c)[0]!;
       const [text, { type, image }] = mp.content as [TextPart, ImagePart];
       expect(text).toStrictEqual({ type: 'text', text: 'Hello Hello' });
       expect(type).toBe('image');

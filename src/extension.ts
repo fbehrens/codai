@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as Codai from './codai';
-import { parse, chatGpt } from './lib/fbutil';
+import { parse } from './lib/fbutil';
 import { streamText } from 'ai';
 const outputChannel = vscode.window.createOutputChannel('Codai');
 let abortController: AbortController | null = null;
@@ -42,10 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
     const c = Codai.getConfig({});
     console.log(c.model.modelId);
     const content = Codai.getQuestion(c);
-    const messages_ = parse(content, c);
-    const messages = messages_.map((m) => {
-      return chatGpt(m, c);
-    });
+    const messages = parse(content, c);
     outputChannel.appendLine(JSON.stringify(messages));
     try {
       const result = streamText({
