@@ -36,26 +36,25 @@ export function activate(context: vscode.ExtensionContext) {
       const messages = parse(content, c);
       outputChannel.appendLine(JSON.stringify(messages));
       const editor = vscode.window.activeTextEditor!;
-
+      const output = async (output: string) => {
+        await editor.edit((editBuilder) => {
+          const position = editor.selection.end;
+          editBuilder.insert(position, output);
+        });
+      };
       try {
         const result = streamText({
           messages,
           model: c.model,
         });
-        let first = true;
+        if (c.languageId === 'markdown') {
+          await output('assistant:\n');
+        }
         for await (const delta of result.textStream) {
           if (abortController.signal.aborted) {
             throw new vscode.CancellationError();
           }
-          const output =
-            first && c.languageId === 'markdown'
-              ? `assistant:\n${delta}`
-              : delta;
-          first = false;
-          await editor.edit((editBuilder) => {
-            const position = editor.selection.end;
-            editBuilder.insert(position, output);
-          });
+          await output(delta);
         }
       } catch (error) {
         if (error instanceof vscode.CancellationError) {
