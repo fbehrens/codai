@@ -27,38 +27,46 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  async function completion() {
-    abortController = new AbortController();
-    stopGeneratingButton.show();
-    const c = Codai.getConfig({});
-    const content = Codai.getQuestion(c);
-    const messages = parse(content, c);
-    outputChannel.appendLine(JSON.stringify(messages));
-    try {
-      const result = streamText({
-        messages,
-        model: c.model,
-      });
-      for await (const delta of result.textStream) {
-        if (abortController.signal.aborted) {
-          throw new vscode.CancellationError();
-        }
-        await c.out(delta);
-      }
-    } catch (error) {
-      if (error instanceof vscode.CancellationError) {
-        console.log('Generation was stopped');
-      } else {
-        console.log(`An error occurred: ${error}`);
-      }
-    } finally {
-      abortController = null;
-      stopGeneratingButton.hide();
-    }
-  }
   context.subscriptions.push(
     vscode.commands.registerCommand('codai.chat_completion', async () => {
-      await completion();
+      abortController = new AbortController();
+      stopGeneratingButton.show();
+      const c = Codai.getConfig({});
+      const content = Codai.getQuestion(c);
+      const messages = parse(content, c);
+      outputChannel.appendLine(JSON.stringify(messages));
+      const editor = vscode.window.activeTextEditor!;
+
+      try {
+        const result = streamText({
+          messages,
+          model: c.model,
+        });
+        let first = true;
+        for await (const delta of result.textStream) {
+          if (abortController.signal.aborted) {
+            throw new vscode.CancellationError();
+          }
+          const output =
+            first && c.languageId === 'markdown'
+              ? `assistant:\n${delta}`
+              : delta;
+          first = false;
+          await editor.edit((editBuilder) => {
+            const position = editor.selection.end;
+            editBuilder.insert(position, output);
+          });
+        }
+      } catch (error) {
+        if (error instanceof vscode.CancellationError) {
+          console.log('Generation was stopped');
+        } else {
+          console.log(`An error occurred: ${error}`);
+        }
+      } finally {
+        abortController = null;
+        stopGeneratingButton.hide();
+      }
     })
   );
 }

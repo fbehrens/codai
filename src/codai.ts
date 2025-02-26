@@ -8,10 +8,9 @@ import { anthropic } from '@ai-sdk/anthropic';
 
 export interface Config {
   model: LanguageModel;
-  imageModel: ImageModel;
-  imageSize: `${number}x${number}`;
+  imageModel?: ImageModel;
+  imageSize?: `${number}x${number}`;
   detail: Fbutil.Detail;
-  out: (a: string) => void;
   dir: string;
   languageId: string;
   languageSystemPrompts?: Record<string, string>;
@@ -20,7 +19,6 @@ export interface Config {
 export function getConfig({
   file = vscode.window.activeTextEditor!.document.uri.path!,
   languageId = vscode.window.activeTextEditor!.document.languageId!,
-  out = pasteStreamingResponse(languageId),
 }): Config {
   const config = vscode.workspace.getConfiguration('codai');
   const model = config.get('model');
@@ -34,7 +32,6 @@ export function getConfig({
     detail: config.get('detail')!,
     languageSystemPrompts: config.get('languageSystemPrompts')!,
     dir: path.dirname(file),
-    out,
     languageId,
   };
 }
@@ -62,19 +59,6 @@ export function getQuestion(c: Config): string {
   return '';
 }
 
-function pasteStreamingResponse(languageId: string) {
-  const editor = vscode.window.activeTextEditor!;
-  let first = true;
-  return async (s: string) => {
-    const output = first && languageId === 'markdown' ? `assistant:\n${s}` : s;
-    first = false;
-    await editor.edit((editBuilder) => {
-      const position = editor.selection.end;
-      editBuilder.insert(position, output);
-    });
-  };
-}
-
 export async function dalle(c: Config): Promise<void> {
   const editor = vscode.window.activeTextEditor!;
   const position = editor.selection.active;
@@ -92,7 +76,7 @@ export async function dalle(c: Config): Promise<void> {
 
 export async function doDalle(prompt: string, c: Config): Promise<string> {
   const generateParams = {
-    model: c.imageModel,
+    model: c.imageModel!,
     prompt,
     size: c.imageSize,
   };

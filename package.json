@@ -56,8 +56,8 @@
         },
         "commands": [
             {
-                "command": "codai.openai_completion",
-                "title": "Codai: OpenAi Chat Completion"
+                "command": "codai.chat_completion",
+                "title": "Codai: Chat Completion"
             },
             {
                 "command": "codai.dalle",

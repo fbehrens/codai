@@ -8,7 +8,6 @@ const c: Config = {
   model: openai('gpt-4o'),
   detail: 'low',
   dir: '/Users/fb/Documents/Github/codai/examples',
-  out: (s: string) => {},
   languageId: 'markdown',
 };
 
