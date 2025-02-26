@@ -53,7 +53,6 @@ export function parse(dialog: string, c: Config): CoreMessage[] {
     '\n$<role>'
   ); // ## user: -> user:
   const paragraphs = dialog1.split(new RegExp(`\n(?=${roles})`));
-  //   let result: ChatCompletionMessageParam[] = [];
   const result: CoreMessage[] = [];
   for (const paragraph of paragraphs) {
     const colon = paragraph.indexOf(':');

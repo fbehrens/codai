@@ -5,16 +5,6 @@ import { streamText } from 'ai';
 const outputChannel = vscode.window.createOutputChannel('Codai');
 let abortController: AbortController | null = null;
 
-async function doDalle(prompt: string): Promise<string> {
-  const response = await openai.images.generate({
-    model: 'dall-e-3',
-    prompt,
-    n: 1,
-    size: '1024x1024',
-  });
-  return response.data[0].url as string;
-}
-
 export function activate(context: vscode.ExtensionContext) {
   const stopGeneratingButton = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Left
@@ -32,7 +22,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand('codai.dalle', async () => {
-      await Codai.dalle(doDalle);
+      const c = Codai.getConfig({});
+      await Codai.dalle(c);
     })
   );
 
@@ -40,7 +31,6 @@ export function activate(context: vscode.ExtensionContext) {
     abortController = new AbortController();
     stopGeneratingButton.show();
     const c = Codai.getConfig({});
-    console.log(c.model.modelId);
     const content = Codai.getQuestion(c);
     const messages = parse(content, c);
     outputChannel.appendLine(JSON.stringify(messages));
@@ -67,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   }
   context.subscriptions.push(
-    vscode.commands.registerCommand('codai.openai_completion', async () => {
+    vscode.commands.registerCommand('codai.chat_completion', async () => {
       await completion();
     })
   );

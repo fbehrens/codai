@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
 import * as Fbutil from './lib/fbutil';
 import * as path from 'path';
-import { LanguageModel } from 'ai';
+import { ImageModel, LanguageModel } from 'ai';
+import { experimental_generateImage as generateImage } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 
 export interface Config {
   model: LanguageModel;
+  imageModel: ImageModel;
+  imageSize: `${number}x${number}`;
   detail: Fbutil.Detail;
   out: (a: string) => void;
   dir: string;
@@ -26,6 +29,8 @@ export function getConfig({
       model == 'gpt-4o'
         ? openai('gpt-4o')
         : anthropic('claude-3-7-sonnet-20250219'),
+    imageModel: openai.image('dall-e-3'),
+    imageSize: config.get<`${number}x${number}`>('imageSize')!,
     detail: config.get('detail')!,
     languageSystemPrompts: config.get('languageSystemPrompts')!,
     dir: path.dirname(file),
@@ -70,18 +75,29 @@ function pasteStreamingResponse(languageId: string) {
   };
 }
 
-/**
- * gets Current line, calls Dalle, and inserts  markdown link to image in the next line
- * @param f
- */
-export async function dalle(f: (s: string) => Promise<string>) {
+export async function dalle(c: Config): Promise<void> {
   const editor = vscode.window.activeTextEditor!;
   const position = editor.selection.active;
   const line = editor.document.lineAt(position.line);
   const prompt: string = line.text;
-  const url: string = await f(prompt);
+  const base64: string = await doDalle(prompt, c);
   const newPosition = position.with(position.line, Number.MAX_VALUE);
   editor.edit((editBuilder) => {
-    editBuilder.insert(newPosition, `\n![](${url})`);
+    editBuilder.insert(
+      newPosition,
+      `\n![${prompt}](data:image/png;base64,${base64})`
+    );
   });
+}
+
+export async function doDalle(prompt: string, c: Config): Promise<string> {
+  const generateParams = {
+    model: c.imageModel,
+    prompt,
+    size: c.imageSize,
+  };
+  console.log({ generateParams });
+  const { image } = await generateImage(generateParams);
+  console.log({ image });
+  return image.base64;
 }
