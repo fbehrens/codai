@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 
-import * as fs from 'fs/promises';
+import { readFileSync } from 'fs';
 import * as path from 'path';
 import { Config } from '../codai';
 import { CoreMessage } from 'ai';
@@ -15,43 +15,39 @@ export function sleep(ms: number): Promise<void> {
 /**
  * Converts message to ChatGPT and extracts ![](url) to chatGpts ChatCompletionMessageParam
  */
-export async function chatGpt(
-  m: Message,
-  c: Config
-): Promise<ChatCompletionMessageParam> {
+export async function chatGpt(m: CoreMessage, c: Config): Promise<CoreMessage> {
   async function imageTag(url: string) {
     if (!url.startsWith('http')) {
       const filename = path.resolve(c.dir, url);
-      const data = await fs.readFile(filename);
-      url = `data:image/jpeg;base64,${data.toString('base64')}`;
+      return {
+        type: 'image',
+        image: readFileSync(filename),
+      };
     }
     return {
-      type: 'image_url',
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      image_url: {
-        url,
-        detail: c.detail,
-      },
+      type: 'image',
+      image: new URL(url),
     };
   }
 
   const regexp = /\!\[[^\]]*\]\((.*?)\)/g;
-  const imagesStr = [...m.content.matchAll(regexp)].map((match) => match[1]);
+  const content = m.content as string;
+  const imagesStr = [...content.matchAll(regexp)].map((match) => match[1]);
   const images = await Promise.all(imagesStr.map(imageTag));
   if (images.length) {
-    const content = m.content.replaceAll(regexp, '');
+    const content_ = content.replaceAll(regexp, '');
     return {
       role: m.role,
       content: [
         {
           type: 'text',
-          text: content,
+          text: content_,
         },
         ...images,
       ],
-    } as ChatCompletionMessageParam;
+    } as CoreMessage;
   }
-  return m as ChatCompletionMessageParam;
+  return m as CoreMessage;
 }
 
 export async function parse(dialog: string, c: Config): Promise<CoreMessage[]> {
@@ -62,7 +58,7 @@ export async function parse(dialog: string, c: Config): Promise<CoreMessage[]> {
   ); // ## user: -> user:
   const paragraphs = dialog1.split(new RegExp(`\n(?=${roles})`));
   //   let result: ChatCompletionMessageParam[] = [];
-  let result: CoreMessage[] = [];
+  const result: CoreMessage[] = [];
   for (const paragraph of paragraphs) {
     const colon = paragraph.indexOf(':');
     const r = paragraph.slice(0, colon);
@@ -74,7 +70,7 @@ export async function parse(dialog: string, c: Config): Promise<CoreMessage[]> {
   }
   // postprrocessing
   // start from last system prompt
-  let lastSystemIndex = result.findLastIndex((e) => e.role === 'system');
+  const lastSystemIndex = result.findLastIndex((e) => e.role === 'system');
   const fromLastS = result.slice(lastSystemIndex);
   if (fromLastS[0].content === '') {
     const lastSystemContentIndex = result.findLastIndex(
