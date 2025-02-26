@@ -1,26 +1,26 @@
 import * as vscode from 'vscode';
 import * as Fbutil from './lib/fbutil';
 import * as path from 'path';
-import { CoreMessage, LanguageModel } from 'ai';
+import { LanguageModel } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
 
-export type Config = {
+export interface Config {
   model: LanguageModel;
   detail: Fbutil.Detail;
   out: (a: string) => void;
   dir: string;
   languageId: string;
   languageSystemPrompts?: Record<string, string>;
-};
+}
 
 export function getConfig({
-  file = vscode.window.activeTextEditor?.document.uri.path!,
-  languageId = vscode.window.activeTextEditor?.document.languageId!,
+  file = vscode.window.activeTextEditor!.document.uri.path!,
+  languageId = vscode.window.activeTextEditor!.document.languageId!,
   out = pasteStreamingResponse(languageId),
 }): Config {
   const config = vscode.workspace.getConfiguration('codai');
-  let model = config.get('model');
+  const model = config.get('model');
   return {
     model:
       model == 'gpt-4o'
@@ -68,14 +68,6 @@ function pasteStreamingResponse(languageId: string) {
       editBuilder.insert(position, output);
     });
   };
-}
-
-export function messagesToString(mess: CoreMessage[]): string {
-  return mess
-    .map((m) => {
-      return m.role + ': ' + m.content + '\n';
-    })
-    .join('\n');
 }
 
 /**

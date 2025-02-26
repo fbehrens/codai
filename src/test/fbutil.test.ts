@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import * as Fbutil from '../lib/fbutil';
 import { Config } from '../codai';
 import { openai } from '@ai-sdk/openai';
-import { DataContent, ImagePart } from 'ai';
+import { DataContent, ImagePart, TextPart } from 'ai';
 
 const c: Config = {
   model: openai('gpt-4o'),
@@ -23,7 +23,7 @@ I am here.
 assistant:  How are you?
 user: I am`;
     it('default', async () => {
-      const result = Fbutil.parse(dialog);
+      const result = Fbutil.parse(dialog, c);
       expect(result).toStrictEqual([
         { role: 'system', content: 'You are a cat' },
         { role: 'user', content: 'Hello Hello,\nI am here.' },
@@ -35,7 +35,7 @@ user: I am`;
       const dialog1 = `${dialog}
 system:
 user: What do you eat`;
-      const result = Fbutil.parse(dialog1);
+      const result = Fbutil.parse(dialog1, c);
       expect(result).toStrictEqual([
         { role: 'system', content: 'You are a cat' },
         { role: 'user', content: 'What do you eat' },
@@ -44,7 +44,7 @@ user: What do you eat`;
   });
   describe('Image', async () => {
     it('http', async () => {
-      const mes = Fbutil.parse(`user: Hello Hello![](http://image)`);
+      const mes = Fbutil.parse(`user: Hello Hello![](http://image)`, c);
       const result = Fbutil.chatGpt(mes[0], c);
       expect(result).toStrictEqual({
         role: 'user',
@@ -57,16 +57,13 @@ user: What do you eat`;
         ],
       });
     });
-    it('local base64', async () => {
-      const m = await Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`);
-      const mp = await Fbutil.chatGpt(m[0], c);
-      const text = mp.content[0];
+    it('local base64', () => {
+      const m = Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`, c);
+      const mp = Fbutil.chatGpt(m[0], c);
+      const [text, { type, image }] = mp.content as [TextPart, ImagePart];
       expect(text).toStrictEqual({ type: 'text', text: 'Hello Hello' });
-
-      const image = mp.content[1] as ImagePart;
-      expect(image.type).toBe('image');
-      const dc = image.image as DataContent;
-      expect(dc.toString().length).toBe(1336);
+      expect(type).toBe('image');
+      expect((image as DataContent).toString().length).toBe(1336);
     });
   });
 });

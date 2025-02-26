@@ -9,9 +9,6 @@ export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/**
- * Converts message to ChatGPT and extracts ![](url) to chatGpts ChatCompletionMessageParam
- */
 export function chatGpt(m: CoreMessage, c: Config): CoreMessage {
   function imageTag(url: string) {
     if (!url.startsWith('http')) {
@@ -47,7 +44,7 @@ export function chatGpt(m: CoreMessage, c: Config): CoreMessage {
   return m as CoreMessage;
 }
 
-export function parse(dialog: string): CoreMessage[] {
+export function parse(dialog: string, c: Config): CoreMessage[] {
   const roles = 'function:|user:|system:|assistant:|dalle:';
   const dialog1 = dialog.replace(
     new RegExp(`\n(#+ )?(?<role>${roles})`, 'g'),
