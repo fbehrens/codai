@@ -12,8 +12,8 @@ export function sleep(ms: number): Promise<void> {
 /**
  * Converts message to ChatGPT and extracts ![](url) to chatGpts ChatCompletionMessageParam
  */
-export async function chatGpt(m: CoreMessage, c: Config): Promise<CoreMessage> {
-  async function imageTag(url: string) {
+export function chatGpt(m: CoreMessage, c: Config): CoreMessage {
+  function imageTag(url: string) {
     if (!url.startsWith('http')) {
       const filename = path.resolve(c.dir, url);
       return {
@@ -30,7 +30,7 @@ export async function chatGpt(m: CoreMessage, c: Config): Promise<CoreMessage> {
   const regexp = /!\[[^\]]*\]\((.*?)\)/g;
   const content = m.content as string;
   const imagesStr = [...content.matchAll(regexp)].map((match) => match[1]);
-  const images = await Promise.all(imagesStr.map(imageTag));
+  const images = imagesStr.map(imageTag);
   if (images.length) {
     const content_ = content.replaceAll(regexp, '');
     return {
@@ -47,7 +47,7 @@ export async function chatGpt(m: CoreMessage, c: Config): Promise<CoreMessage> {
   return m as CoreMessage;
 }
 
-export async function parse(dialog: string, c: Config): Promise<CoreMessage[]> {
+export function parse(dialog: string): CoreMessage[] {
   const roles = 'function:|user:|system:|assistant:|dalle:';
   const dialog1 = dialog.replace(
     new RegExp(`\n(#+ )?(?<role>${roles})`, 'g'),

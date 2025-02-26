@@ -1,11 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import {
-  ChatCompletionContentPartImage,
-  ChatCompletionContentPartText,
-} from 'openai/resources/chat/completions';
 import * as Fbutil from '../lib/fbutil';
 import { Config } from '../codai';
 import { openai } from '@ai-sdk/openai';
+import { DataContent, ImagePart } from 'ai';
 
 const c: Config = {
   model: openai('gpt-4o'),
@@ -26,7 +23,7 @@ I am here.
 assistant:  How are you?
 user: I am`;
     it('default', async () => {
-      const result = await Fbutil.parse(dialog, c);
+      const result = Fbutil.parse(dialog);
       expect(result).toStrictEqual([
         { role: 'system', content: 'You are a cat' },
         { role: 'user', content: 'Hello Hello,\nI am here.' },
@@ -38,7 +35,7 @@ user: I am`;
       const dialog1 = `${dialog}
 system:
 user: What do you eat`;
-      const result = await Fbutil.parse(dialog1, c);
+      const result = Fbutil.parse(dialog1);
       expect(result).toStrictEqual([
         { role: 'system', content: 'You are a cat' },
         { role: 'user', content: 'What do you eat' },
@@ -47,34 +44,29 @@ user: What do you eat`;
   });
   describe('Image', async () => {
     it('http', async () => {
-      const mes = await Fbutil.parse(`user: Hello Hello![](http://image)`, c);
-      const result = await Fbutil.chatGpt(mes[0], c);
+      const mes = Fbutil.parse(`user: Hello Hello![](http://image)`);
+      const result = Fbutil.chatGpt(mes[0], c);
       expect(result).toStrictEqual({
         role: 'user',
         content: [
           { type: 'text', text: 'Hello Hello' },
           {
-            type: 'image_url',
-            // eslint-disable-next-line @typescript-eslint/naming-convention
-            image_url: {
-              url: 'http://image',
-              detail: c.detail,
-            },
+            type: 'image',
+            image: new URL('http://image'),
           },
         ],
       });
     });
     it('local base64', async () => {
-      const m = await Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`, c);
+      const m = await Fbutil.parse(`user: Hello Hello![](fbehrens.jpeg)`);
       const mp = await Fbutil.chatGpt(m[0], c);
-
-      const text = mp.content![0] as ChatCompletionContentPartText;
+      const text = mp.content[0];
       expect(text).toStrictEqual({ type: 'text', text: 'Hello Hello' });
 
-      const image = mp.content![1] as ChatCompletionContentPartImage;
-      const base64 = image.image_url.url;
-      expect(base64).toMatch(/^data:image\/jpeg;base64,/);
-      expect(base64.length).toBe(1883);
+      const image = mp.content[1] as ImagePart;
+      expect(image.type).toBe('image');
+      const dc = image.image as DataContent;
+      expect(dc.toString().length).toBe(1336);
     });
   });
 });

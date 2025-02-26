@@ -42,13 +42,11 @@ export function activate(context: vscode.ExtensionContext) {
     const c = Codai.getConfig({});
     console.log(c.model.modelId);
     const content = Codai.getQuestion(c);
-    const messages_ = await parse(content, c);
+    const messages_ = parse(content);
     outputChannel.appendLine(Codai.messagesToString(messages_));
-    const messages = await Promise.all(
-      messages_.map((m) => {
-        return chatGpt(m, c);
-      })
-    );
+    const messages = messages_.map((m) => {
+      return chatGpt(m, c);
+    });
     console.log({ messages });
 
     try {
