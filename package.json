@@ -90,8 +90,7 @@
     "dependencies": {
         "@ai-sdk/anthropic": "^1.1.10",
         "@ai-sdk/openai": "^1.1.14",
-        "ai": "^4.1.46",
-        "openai": "^4.85.4"
+        "ai": "^4.1.46"
     },
     "pnpm": {
         "onlyBuiltDependencies": [
