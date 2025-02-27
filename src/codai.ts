@@ -17,20 +17,29 @@ export interface Config {
 }
 
 export function getConfig({
-  file = vscode.window.activeTextEditor!.document.uri.path!,
-  languageId = vscode.window.activeTextEditor!.document.languageId!,
-}): Config {
+  file = vscode.window.activeTextEditor?.document.uri.path,
+  languageId = vscode.window.activeTextEditor?.document.languageId,
+} = {}): Config {
+  if (!file || !languageId) {
+    throw new Error('Active text editor is required');
+  }
+
   const config = vscode.workspace.getConfiguration('codai');
-  const model = config.get('model');
+  const model = config.get<string>('model');
+  const detail = config.get<Fbutil.Detail>('detail') || 'low';
+  const imageSize = config.get<`${number}x${number}`>('imageSize');
+  const languageSystemPrompts =
+    config.get<Record<string, string>>('languageSystemPrompts') || {};
+
   return {
     model:
-      model == 'gpt-4o'
+      model === 'gpt-4o'
         ? openai('gpt-4o')
         : anthropic('claude-3-7-sonnet-20250219'),
     imageModel: openai.image('dall-e-3'),
-    imageSize: config.get<`${number}x${number}`>('imageSize')!,
-    detail: config.get('detail')!,
-    languageSystemPrompts: config.get('languageSystemPrompts')!,
+    imageSize,
+    detail,
+    languageSystemPrompts,
     dir: path.dirname(file),
     languageId,
   };
