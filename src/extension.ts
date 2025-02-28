@@ -59,6 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
           response += delta;
           await output(delta);
         }
+        console.log({ result });
       } catch (error) {
         if (error instanceof vscode.CancellationError) {
           console.log('Generation was stopped');
@@ -68,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
       } finally {
         abortController = null;
         stopGeneratingButton.hide();
-        outputChannel.appendLine(`${c.model.modelId}: ${response}\n`);
+        outputChannel.appendLine(`${c.model.modelId}:\n${response}\n`);
       }
     })
   );

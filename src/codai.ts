@@ -5,6 +5,7 @@ import { ImageModel, LanguageModel } from 'ai';
 import { experimental_generateImage as generateImage } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { anthropic } from '@ai-sdk/anthropic';
+import { google } from '@ai-sdk/google';
 import { deepseek } from '@ai-sdk/deepseek';
 
 export interface Config {
@@ -27,24 +28,23 @@ export function getConfig({
 
   const config = vscode.workspace.getConfiguration('codai');
   const model = config.get<string>('model');
+  if (!model) {
+    throw new Error('Model is required');
+  }
   const detail = config.get<Fbutil.Detail>('detail') || 'low';
   const imageSize = config.get<`${number}x${number}`>('imageSize');
   const languageSystemPrompts =
     config.get<Record<string, string>>('languageSystemPrompts') || {};
-
   return {
-    model:
-      model === 'gpt-4o'
-        ? openai('gpt-4o')
-        : model === 'gpt-4.5-preview'
-        ? openai('gpt-4.5-preview')
-        : model === 'deepseek-chat'
-        ? deepseek('deepseek-chat')
-        : model === 'deepseek-reasoner'
-        ? deepseek('deepseek-reasoner')
-        : model === 'claude-3-7-sonnet-20250219'
-        ? anthropic('claude-3-7-sonnet-20250219')
-        : openai(''),
+    model: ['gpt-4o', 'gpt-4.5-preview'].includes(model)
+      ? openai(model)
+      : ['deepseek-chat', 'deepseek-reasoner'].includes(model)
+      ? deepseek(model)
+      : ['claude-3-7-sonnet-20250219'].includes(model)
+      ? anthropic(model)
+      : ['gemini-1.5-flash', 'gemini-2.0-flash'].includes(model)
+      ? google(model)
+      : openai(''),
     imageModel: openai.image('dall-e-3'),
     imageSize,
     detail,

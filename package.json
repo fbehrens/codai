@@ -42,6 +42,8 @@
                         "gpt-4.5-preview",
                         "deepseek-chat",
                         "deepseek-reasoner",
+                        "gemini-1.5-flash",
+                        "gemini-2.0-flash",
                         "gpt-4o"
                     ],
                     "description": "Language Model"
@@ -93,6 +95,7 @@
     "dependencies": {
         "@ai-sdk/anthropic": "^1.1.10",
         "@ai-sdk/deepseek": "^0.1.12",
+        "@ai-sdk/google": "^1.1.17",
         "@ai-sdk/openai": "^1.1.14",
         "ai": "^4.1.46"
     }
