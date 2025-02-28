@@ -3,6 +3,7 @@ import * as Codai from './codai';
 import { parse } from './lib/fbutil';
 import { streamText } from 'ai';
 const outputChannel = vscode.window.createOutputChannel('Codai');
+outputChannel.show();
 let abortController: AbortController | null = null;
 
 export function activate(context: vscode.ExtensionContext) {
@@ -34,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
       const c = Codai.getConfig({});
       const content = Codai.getQuestion(c);
       const messages = parse(content, c);
-      outputChannel.appendLine(JSON.stringify(messages));
+      outputChannel.appendLine(JSON.stringify(messages, null, 2));
       const editor = vscode.window.activeTextEditor!;
       const output = async (output: string) => {
         await editor.edit((editBuilder) => {
@@ -42,6 +43,7 @@ export function activate(context: vscode.ExtensionContext) {
           editBuilder.insert(position, output);
         });
       };
+      let response = '';
       try {
         const result = streamText({
           messages,
@@ -54,6 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
           if (abortController.signal.aborted) {
             throw new vscode.CancellationError();
           }
+          response += delta;
           await output(delta);
         }
       } catch (error) {
@@ -65,6 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
       } finally {
         abortController = null;
         stopGeneratingButton.hide();
+        outputChannel.appendLine(`${c.model.modelId}: ${response}\n`);
       }
     })
   );
