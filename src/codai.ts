@@ -35,6 +35,8 @@ export function getConfig({
     model:
       model === 'gpt-4o'
         ? openai('gpt-4o')
+        : model === 'gpt-4.5-preview'
+        ? openai('gpt-4.5-preview')
         : anthropic('claude-3-7-sonnet-20250219'),
     imageModel: openai.image('dall-e-3'),
     imageSize,

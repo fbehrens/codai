@@ -39,6 +39,7 @@
                     "default": "claude-3-7-sonnet-20250219",
                     "enum": [
                         "claude-3-7-sonnet-20250219",
+                        "gpt-4.5-preview",
                         "gpt-4o"
                     ],
                     "description": "Language Model"
